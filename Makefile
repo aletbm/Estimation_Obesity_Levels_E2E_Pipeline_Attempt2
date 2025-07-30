@@ -17,7 +17,7 @@ lint:
 	pre-commit run --all-files
 
 run-monitoring:
-	python monitoring/monitor.py
+	python monitoring/monitor.py $(ALIAS)
 
 build-image:
 	docker build -t obesity-level-api .
@@ -36,7 +36,10 @@ run-mlflow:
 	mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./models
 
 run-training:
-	python pipelines/training_flow.py
+	python pipelines/training_flow.py $(ALIAS)
+
+list-models:
+	python scripts/list_registered_models.py
 
 run-inference:
 	python pipelines/batch_inference.py  data/test.parquet
@@ -51,3 +54,19 @@ terraform-destroy:
 
 test-remote:
 	python deployment/test_serve.py
+
+
+GCP_PROJECT_ID = plucky-haven-463121-j1
+SERVICE_NAME = obesity-level-api
+REGION = us-east1
+IMAGE = gcr.io/$(GCP_PROJECT_ID)/$(SERVICE_NAME)
+PORT = 8080
+
+deploy-gcp:
+	gcloud builds submit --tag $(IMAGE)
+	gcloud run deploy $(SERVICE_NAME) \
+		--image $(IMAGE) \
+		--platform managed \
+		--region $(REGION) \
+		--allow-unauthenticated \
+		--port $(PORT)

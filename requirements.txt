@@ -1,7 +1,7 @@
 pandas==2.3.1
 numpy==2.0.0
 scikit-learn==1.5.0
-xgboost==3.0.2
+catboost==1.2.8
 fastapi==0.116.1
 cloudpickle==3.1.1
 pyarrow==16.1.0
@@ -13,3 +13,6 @@ uvicorn
 pydantic==1.10.22
 pytest
 google-cloud-storage
+
+#$env:PIPENV_TIMEOUT=60
+#pipenv install -r requirements.txt

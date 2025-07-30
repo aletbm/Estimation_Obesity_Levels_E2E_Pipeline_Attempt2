@@ -1,0 +1,55 @@
+artifact_path: catboost_model
+flavors:
+  catboost:
+    catboost_version: 1.2.8
+    code: null
+    data: model.cb
+    model_type: CatBoostClassifier
+    save_format: cbm
+  python_function:
+    data: model.cb
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.catboost
+    python_version: 3.10.9
+is_signature_from_type_hint: false
+mlflow_version: 2.22.1
+model_size_bytes: 3128254
+model_uuid: ac29c7f355ad40a7aca8423fb4329afa
+prompts: null
+run_id: 5627f2b147af4c728171297efc479418
+saved_input_example_info:
+  artifact_path: input_example.json
+  pandas_orient: split
+  serving_input_path: serving_input_example.json
+  type: dataframe
+signature:
+  inputs: '[{"type": "double", "name": "age", "required": true}, {"type": "double",
+    "name": "drink_alcohol=Always", "required": true}, {"type": "double", "name":
+    "drink_alcohol=Frequently", "required": true}, {"type": "double", "name": "drink_alcohol=Sometimes",
+    "required": true}, {"type": "double", "name": "drink_alcohol=no", "required":
+    true}, {"type": "double", "name": "drink_water", "required": true}, {"type": "double",
+    "name": "eat_hc_food=no", "required": true}, {"type": "double", "name": "eat_hc_food=yes",
+    "required": true}, {"type": "double", "name": "eat_vegetables", "required": true},
+    {"type": "double", "name": "gender=Female", "required": true}, {"type": "double",
+    "name": "gender=Male", "required": true}, {"type": "double", "name": "height",
+    "required": true}, {"type": "double", "name": "main_meals", "required": true},
+    {"type": "double", "name": "monitoring_calories=no", "required": true}, {"type":
+    "double", "name": "monitoring_calories=yes", "required": true}, {"type": "double",
+    "name": "overweight_familiar=no", "required": true}, {"type": "double", "name":
+    "overweight_familiar=yes", "required": true}, {"type": "double", "name": "physical_activity",
+    "required": true}, {"type": "double", "name": "smoke=no", "required": true}, {"type":
+    "double", "name": "smoke=yes", "required": true}, {"type": "double", "name": "snack=Always",
+    "required": true}, {"type": "double", "name": "snack=Frequently", "required":
+    true}, {"type": "double", "name": "snack=Sometimes", "required": true}, {"type":
+    "double", "name": "snack=no", "required": true}, {"type": "double", "name": "transportation_type=Automobile",
+    "required": true}, {"type": "double", "name": "transportation_type=Bike", "required":
+    true}, {"type": "double", "name": "transportation_type=Motorbike", "required":
+    true}, {"type": "double", "name": "transportation_type=Public_Transportation",
+    "required": true}, {"type": "double", "name": "transportation_type=Walking", "required":
+    true}, {"type": "double", "name": "use_of_technology", "required": true}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "int64", "shape": [-1, 1]}}]'
+  params: null
+type_hint_from_example: false
+utc_time_created: '2025-07-30 18:56:24.984165'
