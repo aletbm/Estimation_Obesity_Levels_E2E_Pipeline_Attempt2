@@ -2,9 +2,56 @@
 
 ![banner](https://camo.githubusercontent.com/170d65f3a251ad19a48fe853b42e51665215cf52af59c4b689a5cd1aa9e720f1/68747470733a2f2f692e706f7374696d672e63632f6d3253636b51504d2f626f64792d6d6173732d696e6465782d63616c63756c61746f722d322e706e67)
 
-## Problem description
+## 🩺 Problem Description
 
-This project focuses on building a machine learning system for **multi-class classification** of **obesity levels** based on individuals' **eating habits** and **physical conditions**. The goal is to predict a person's obesity category from features like physical activity, food intake, water consumption, and use of technology.
+Obesity is a major public health concern worldwide. Its impact spans across cardiovascular diseases, diabetes, certain types of cancer, and reduced quality of life. The early identification of individuals at risk of obesity — through lifestyle and physical indicators — is essential for timely intervention and prevention strategies.
+
+In this context, machine learning provides powerful tools to analyze patterns in personal habits and physiological features that may contribute to obesity. However, building a useful ML system goes beyond just training a model — it requires designing a robust pipeline that is reproducible, testable, scalable, and ready for deployment and monitoring in real environments.
+
+This project addresses exactly that need.
+
+We tackle the **multi-class classification problem** of predicting an individual's **obesity level**, based on their:
+- eating habits (e.g. number of meals, snack frequency, calorie monitoring)
+- physical characteristics (age, weight, height, physical activity)
+- lifestyle choices (alcohol consumption, technology use, transportation, etc.)
+
+The objective is to predict one of seven obesity categories:
+
+1. Insufficient Weight
+2. Normal Weight
+3. Overweight Level I
+4. Overweight Level II
+5. Obesity Type I
+6. Obesity Type II
+7. Obesity Type III
+
+---
+
+## 🔄 Project Background
+
+This repository is the **MLOps extension** of my previous machine learning project developed during the [MLZoomcamp](https://github.com/DataTalksClub/machine-learning-zoomcamp) midterm.
+
+You can find the original project and its Jupyter notebook analysis here:
+
+👉 https://github.com/aletbm/Estimation_Obesity_Levels
+
+While the original repository focused on:
+- Exploratory data analysis (EDA)
+- Data preprocessing and feature engineering
+- Benchmarking multiple models (CatBoost, XGBoost, Neural Networks, etc.)
+- Model selection based on performance metrics
+
+**This repository extends that work into a full end-to-end MLOps pipeline**, integrating best practices and tools to enable:
+
+- Automated training workflows with **Prefect**
+- Experiment tracking and model registry using **MLflow**
+- Deployment of models via **FastAPI** and **Docker**
+- Cloud provisioning with **Terraform** on **Google Cloud Platform (GCP)**
+- Continuous monitoring with **Evidently AI**
+- CI/CD automation with **GitHub Actions**
+- Testing, validation, and reproducibility via **pytest** and **pre-commit hooks**
+
+---
 
 ### 📦 Dataset: Obesity dataset (UCI Repository)
 
