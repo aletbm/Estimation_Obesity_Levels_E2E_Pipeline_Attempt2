@@ -368,6 +368,8 @@ These tests help ensure reproducibility, correctness of data pipeline logic, and
 
 The `.github/workflows/ci.yml` file defines a GitHub Actions workflow that automatically runs on every push and pull request to the main branch to ensure code quality and functionality.
 
+![CICD](./src/cicd.png)
+
 The workflow includes the following jobs:
 
 - setup: Checks out the code, sets up Python 3.10, and installs dependencies using pipenv.
