@@ -8,14 +8,14 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction import DictVectorizer
 import numpy as np
-import config as cfg
+from config import DATA_FOLDER, SEED_VALUE
 
 input_folder = "./"
 data_folder = input_folder + "data/"
 
 
 def test_transform_data():
-    df = pd.read_csv(cfg.DATA_FOLDER + "ObesityDataSet_raw_and_data_sinthetic.csv")
+    df = pd.read_csv(DATA_FOLDER + "ObesityDataSet_raw_and_data_sinthetic.csv")
     df = df.rename(
         columns={
             "family_history_with_overweight": "overweight_familiar",
@@ -35,12 +35,12 @@ def test_transform_data():
     df = df.drop_duplicates()
     df = df.drop(["weight"], axis=1)
     df_full_train, df_test = train_test_split(
-        df, test_size=0.15, random_state=cfg.SEED_VALUE, stratify=df["obesity_level"]
+        df, test_size=0.15, random_state=SEED_VALUE, stratify=df["obesity_level"]
     )
     df_train, df_val = train_test_split(
         df_full_train,
         test_size=0.15,
-        random_state=cfg.SEED_VALUE,
+        random_state=SEED_VALUE,
         stratify=df_full_train["obesity_level"],
     )
 
@@ -78,7 +78,7 @@ def test_transform_data():
 
 
 def test_label_encoding():
-    df = pd.read_csv(cfg.DATA_FOLDER + "ObesityDataSet_raw_and_data_sinthetic.csv")
+    df = pd.read_csv(DATA_FOLDER + "ObesityDataSet_raw_and_data_sinthetic.csv")
     df = df.rename(
         columns={
             "family_history_with_overweight": "overweight_familiar",
@@ -98,12 +98,12 @@ def test_label_encoding():
     df = df.drop_duplicates()
     df = df.drop(["weight"], axis=1)
     df_full_train, df_test = train_test_split(
-        df, test_size=0.15, random_state=cfg.SEED_VALUE, stratify=df["obesity_level"]
+        df, test_size=0.15, random_state=SEED_VALUE, stratify=df["obesity_level"]
     )
     df_train, df_val = train_test_split(
         df_full_train,
         test_size=0.15,
-        random_state=cfg.SEED_VALUE,
+        random_state=SEED_VALUE,
         stratify=df_full_train["obesity_level"],
     )
 

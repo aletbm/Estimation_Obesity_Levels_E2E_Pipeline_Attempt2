@@ -23,6 +23,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 from catboost import CatBoostClassifier
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import config as cfg
+
 
 @task
 def load_data():
@@ -272,10 +275,6 @@ def obesity_level_pipeline(model_alias):
 
 
 if __name__ == "__main__":
-
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    import config as cfg
-
     alias = sys.argv[1]
     obesity_level_pipeline(model_alias=alias)
 
