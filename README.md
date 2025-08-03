@@ -284,6 +284,10 @@ Monitor model drift and prediction quality using:
 make run-monitoring ALIAS=YourModelAlias
 ```
 
+
+https://github.com/user-attachments/assets/2b04fecf-8d1e-419b-bb4e-e26b8c0e3ae9
+
+
 This compares a new batch of predictions against expected values and generates:
 
 - `monitoring/full_monitor_report.html`: Detailed drift and performance report
