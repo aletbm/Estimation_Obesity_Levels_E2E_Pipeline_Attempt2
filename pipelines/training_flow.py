@@ -26,8 +26,6 @@ from catboost import CatBoostClassifier
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import config as cfg
 
-cfg.init_conn_mlflow()
-
 
 @task
 def load_data():
@@ -277,6 +275,9 @@ def obesity_level_pipeline(model_alias):
 
 
 if __name__ == "__main__":
+
+    cfg.init_conn_mlflow()
+
     alias = sys.argv[1]
     obesity_level_pipeline(model_alias=alias)
 
