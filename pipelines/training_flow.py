@@ -26,22 +26,26 @@ from catboost import CatBoostClassifier
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import config as cfg
 
+
 @task
 def load_data():
     df = pd.read_csv(cfg.DATA_FOLDER + "ObesityDataSet_raw_and_data_sinthetic.csv")
-    df = df.rename(columns={"family_history_with_overweight": "overweight_familiar",
-                       "FAVC":"eat_HC_food",
-                       "FCVC":"eat_vegetables",
-                       "NCP":"main_meals",
-                       "CAEC":"snack",
-                       "CH2O":"drink_water",
-                       "SCC":"monitoring_calories",
-                       "FAF":"physical_activity",
-                       "TUE":"use_of_technology",
-                       "CALC":"drink_alcohol",
-                       "MTRANS":"transportation_type",
-                       "NObeyesdad":"obesity_level"
-                       }).rename(columns=str.lower)
+    df = df.rename(
+        columns={
+            "family_history_with_overweight": "overweight_familiar",
+            "FAVC": "eat_HC_food",
+            "FCVC": "eat_vegetables",
+            "NCP": "main_meals",
+            "CAEC": "snack",
+            "CH2O": "drink_water",
+            "SCC": "monitoring_calories",
+            "FAF": "physical_activity",
+            "TUE": "use_of_technology",
+            "CALC": "drink_alcohol",
+            "MTRANS": "transportation_type",
+            "NObeyesdad": "obesity_level",
+        }
+    ).rename(columns=str.lower)
     return df
 
 
@@ -52,14 +56,22 @@ def clean_data(df):
 
 
 def split_data(df, target):
-    df_full_train, df_test = train_test_split(df, test_size=0.15, random_state=cfg.SEED_VALUE, stratify=df[target])
-    df_train, df_val = train_test_split(df_full_train, test_size=0.15, random_state=cfg.SEED_VALUE, stratify=df_full_train[target])
+    df_full_train, df_test = train_test_split(
+        df, test_size=0.15, random_state=cfg.SEED_VALUE, stratify=df[target]
+    )
+    df_train, df_val = train_test_split(
+        df_full_train,
+        test_size=0.15,
+        random_state=cfg.SEED_VALUE,
+        stratify=df_full_train[target],
+    )
     return df_train, df_val, df_test
 
 
 def get_X_y(df, target):
     X, y = df.drop([target], axis=1), df[target]
     return X, y
+
 
 @task
 def transform_data(X_train, X_val, X_test):
@@ -78,7 +90,12 @@ def transform_data(X_train, X_val, X_test):
             return X.to_dict("records")
 
     numeric_cols = X_train.select_dtypes(exclude=["object"]).columns
-    pipe = Pipeline([('ss', MyStandardScaler(numeric_cols=numeric_cols)), ('dv', DictVectorizer(sparse=False).set_output(transform="pandas"))])
+    pipe = Pipeline(
+        [
+            ("ss", MyStandardScaler(numeric_cols=numeric_cols)),
+            ("dv", DictVectorizer(sparse=False).set_output(transform="pandas")),
+        ]
+    )
 
     X_train = pipe.fit_transform(X_train)
     X_val = pipe.transform(X_val)
@@ -114,6 +131,7 @@ def prepare_data(df):
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 
+
 def get_scores(y_true, y_pred, y_pred_proba):
     return {
         "Balanced Accuracy": balanced_accuracy_score(y_true, y_pred),
@@ -125,30 +143,32 @@ def get_scores(y_true, y_pred, y_pred_proba):
         ),
     }
 
+
 @task
 def training(X_train, y_train, X_val, y_val, X_test, y_test, model_alias):
-    class_weight = compute_class_weight(class_weight="balanced", classes=np.unique(y_train), y=y_train)
+    class_weight = compute_class_weight(
+        class_weight="balanced", classes=np.unique(y_train), y=y_train
+    )
     class_weight = dict(zip(np.unique(y_train), class_weight))
 
-    sample_weights = compute_sample_weight(
-        class_weight=class_weight,
-        y=y_train
-    )
+    sample_weights = compute_sample_weight(class_weight=class_weight, y=y_train)
 
     with mlflow.start_run():
-        cbc = CatBoostClassifier(loss_function='MultiClass',
-                         eval_metric='AUC',
-                         iterations=5000,
-                         depth=6,
-                         classes_count=7,
-                         class_weights=class_weight,
-                         learning_rate=0.1,
-                         od_type='Iter',
-                         early_stopping_rounds=1000,
-                         bootstrap_type='MVS',
-                         sampling_frequency='PerTree',
-                         random_seed=cfg.SEED_VALUE,
-                         verbose=200)
+        cbc = CatBoostClassifier(
+            loss_function="MultiClass",
+            eval_metric="AUC",
+            iterations=5000,
+            depth=6,
+            classes_count=7,
+            class_weights=class_weight,
+            learning_rate=0.1,
+            od_type="Iter",
+            early_stopping_rounds=1000,
+            bootstrap_type="MVS",
+            sampling_frequency="PerTree",
+            random_seed=cfg.SEED_VALUE,
+            verbose=200,
+        )
         cbc.fit(X_train, y_train, sample_weight=sample_weights, eval_set=(X_val, y_val))
 
         y_pred = cbc.predict(X_test)
@@ -160,7 +180,13 @@ def training(X_train, y_train, X_val, y_val, X_test, y_test, model_alias):
         mlflow.log_param("best_iteration", cbc.best_iteration_)
         mlflow.log_param("params", cbc.get_all_params())
 
-        for metric in ["Balanced Accuracy", "F1 Score", "Precision", "Recall", "ROC AUC"]:
+        for metric in [
+            "Balanced Accuracy",
+            "F1 Score",
+            "Precision",
+            "Recall",
+            "ROC AUC",
+        ]:
             mlflow.log_metric(metric, scores[metric])
 
         mlflow.catboost.log_model(
@@ -187,21 +213,45 @@ def training(X_train, y_train, X_val, y_val, X_test, y_test, model_alias):
         )
 
         client.set_model_version_tag(
-                name=cfg.MODEL_NAME,
-                version=latest_mv.version,
-                key="task",
-                value="classification"
-            )
+            name=cfg.MODEL_NAME,
+            version=latest_mv.version,
+            key="task",
+            value="classification",
+        )
 
-        for metric in ["Balanced Accuracy", "F1 Score", "Precision", "Recall", "ROC AUC"]:
+        for metric in [
+            "Balanced Accuracy",
+            "F1 Score",
+            "Precision",
+            "Recall",
+            "ROC AUC",
+        ]:
             client.set_model_version_tag(
                 name=cfg.MODEL_NAME,
                 version=latest_mv.version,
                 key=metric.replace(" ", "_").lower(),
-                value=str(scores[metric])
+                value=str(scores[metric]),
             )
 
     return cbc
+
+
+@task
+def upload_model_artifacts_to_gcs(project_id, bucket_name, local_dir, prefix=""):
+    client = storage.Client(project=project_id)
+    bucket = client.bucket(bucket_name)
+
+    for root, _, files in os.walk(local_dir):
+        for file in files:
+            local_path = os.path.join(root, file)
+            blob_path = os.path.join(
+                prefix, os.path.relpath(local_path, local_dir)
+            ).replace("\\", "/")
+            blob = bucket.blob(blob_path)
+            blob.upload_from_filename(local_path)
+            print(f"Uploaded {local_path} to gs://{bucket_name}/{blob_path}")
+    return
+
 
 @flow(name="Obesity Level ML Pipeline", retries=1, retry_delay_seconds=300)
 def obesity_level_pipeline(model_alias):
@@ -215,6 +265,12 @@ def obesity_level_pipeline(model_alias):
         y_test,
     ) = prepare_data(df)
     training(X_train, y_train, X_val, y_val, X_test, y_test, model_alias=model_alias)
+    upload_model_artifacts_to_gcs(
+        project_id="plucky-haven-463121-j1",
+        bucket_name="plucky-haven-463121-j1-mlflow-models",
+        local_dir="models",
+        prefix="run_artifacts",
+    )
     return
 
 
@@ -222,4 +278,4 @@ if __name__ == "__main__":
     alias = sys.argv[1]
     obesity_level_pipeline(model_alias=alias)
 
-#make run-training ALIAS=champion
+# make run-training ALIAS=champion

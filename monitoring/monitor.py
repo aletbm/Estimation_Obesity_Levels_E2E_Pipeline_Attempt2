@@ -20,11 +20,17 @@ from datetime import datetime
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from pipelines.training_flow import obesity_level_pipeline, load_data, clean_data, prepare_data
+from pipelines.training_flow import (
+    obesity_level_pipeline,
+    load_data,
+    clean_data,
+    prepare_data,
+)
 import config as cfg
 
 ARTIFACT_DIR = "monitoring/artifacts"
 os.makedirs(ARTIFACT_DIR, exist_ok=True)
+
 
 @task
 def load_model_and_artifacts(model_alias):
@@ -33,7 +39,9 @@ def load_model_and_artifacts(model_alias):
     run_id = model_version.run_id
 
     model = mlflow.pyfunc.load_model(f"models:/{cfg.MODEL_NAME}@{model_alias}")
-    pipe_path = client.download_artifacts(run_id, "preprocessing/pipe.pkl", ARTIFACT_DIR)
+    pipe_path = client.download_artifacts(
+        run_id, "preprocessing/pipe.pkl", ARTIFACT_DIR
+    )
     le_path = client.download_artifacts(run_id, "preprocessing/le.pkl", ARTIFACT_DIR)
 
     with open(pipe_path, "rb") as f:
@@ -48,19 +56,22 @@ def load_model_and_artifacts(model_alias):
 @task
 def load_data():
     df = pd.read_csv(cfg.DATA_FOLDER + "ObesityDataSet_raw_and_data_sinthetic.csv")
-    df = df.rename(columns={"family_history_with_overweight": "overweight_familiar",
-                       "FAVC":"eat_HC_food",
-                       "FCVC":"eat_vegetables",
-                       "NCP":"main_meals",
-                       "CAEC":"snack",
-                       "CH2O":"drink_water",
-                       "SCC":"monitoring_calories",
-                       "FAF":"physical_activity",
-                       "TUE":"use_of_technology",
-                       "CALC":"drink_alcohol",
-                       "MTRANS":"transportation_type",
-                       "NObeyesdad":"obesity_level"
-                       }).rename(columns=str.lower)
+    df = df.rename(
+        columns={
+            "family_history_with_overweight": "overweight_familiar",
+            "FAVC": "eat_HC_food",
+            "FCVC": "eat_vegetables",
+            "NCP": "main_meals",
+            "CAEC": "snack",
+            "CH2O": "drink_water",
+            "SCC": "monitoring_calories",
+            "FAF": "physical_activity",
+            "TUE": "use_of_technology",
+            "CALC": "drink_alcohol",
+            "MTRANS": "transportation_type",
+            "NObeyesdad": "obesity_level",
+        }
+    ).rename(columns=str.lower)
     df = clean_data(df)
     return df
 
@@ -73,16 +84,27 @@ def clean_data(df):
 
 @task
 def split_data(df, target):
-    df_full_train, df_test = train_test_split(df, test_size=0.15, random_state=cfg.SEED_VALUE, stratify=df[target])
-    df_train, _ = train_test_split(df_full_train, test_size=0.15, random_state=cfg.SEED_VALUE, stratify=df_full_train[target])
+    df_full_train, df_test = train_test_split(
+        df, test_size=0.15, random_state=cfg.SEED_VALUE, stratify=df[target]
+    )
+    df_train, _ = train_test_split(
+        df_full_train,
+        test_size=0.15,
+        random_state=cfg.SEED_VALUE,
+        stratify=df_full_train[target],
+    )
     return df_train, df_test
 
 
 @task
 def prepare_datasets(model, pipe, le, train_df, test_df, target_col="obesity_level"):
     feature_cols = train_df.drop(columns=[target_col]).columns.tolist()
-    numeric_cols = train_df.drop(columns=[target_col]).select_dtypes(exclude=["object"]).columns.tolist()
-    
+    numeric_cols = (
+        train_df.drop(columns=[target_col])
+        .select_dtypes(exclude=["object"])
+        .columns.tolist()
+    )
+
     def make_dataset(df):
         X = df[feature_cols].copy()
         X_ = pipe.transform(X)
@@ -139,15 +161,12 @@ def send_slack_alert(message: str, state, flow_name):
         "SUCCESS": "#36a64f",
         "FAILURE": "#ff0000",
         "INFO": "#3AA3E3",
-        "WARNING": "#FFA500"
+        "WARNING": "#FFA500",
     }.get(state, "#cccccc")
 
-    emoji = {
-        "SUCCESS": "✅",
-        "FAILURE": "❌",
-        "INFO": "ℹ️",
-        "WARNING": "⚠️"
-    }.get(state, "ℹ️")
+    emoji = {"SUCCESS": "✅", "FAILURE": "❌", "INFO": "ℹ️", "WARNING": "⚠️"}.get(
+        state, "ℹ️"
+    )
 
     date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -161,39 +180,29 @@ def send_slack_alert(message: str, state, flow_name):
                         "text": {
                             "type": "plain_text",
                             "text": f"{emoji} Prefect Flow Alert - {state}",
-                            "emoji": True
-                        }
+                            "emoji": True,
+                        },
                     },
                     {
                         "type": "section",
                         "fields": [
-                            {
-                                "type": "mrkdwn",
-                                "text": f"*Flow:* `{flow_name}`"
-                            },
-                            {
-                                "type": "mrkdwn",
-                                "text": f"*Status:* *{state}*"
-                            },
-                            {
-                                "type": "mrkdwn",
-                                "text": f"*Time:* {date}"
-                            },
-                        ]
+                            {"type": "mrkdwn", "text": f"*Flow:* `{flow_name}`"},
+                            {"type": "mrkdwn", "text": f"*Status:* *{state}*"},
+                            {"type": "mrkdwn", "text": f"*Time:* {date}"},
+                        ],
                     },
-                ]
+                ],
             }
         ]
     }
 
     if message:
-        template["attachments"][0]["blocks"].append({
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*Message:* `{message}`"
+        template["attachments"][0]["blocks"].append(
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": f"*Message:* `{message}`"},
             }
-        })
+        )
 
     if not cfg.SLACK_WEBHOOK_URL:
         print("Slack webhook not configured.")
@@ -217,7 +226,7 @@ def check_drift_and_maybe_retrain(drift_score: float, model_alias: str, flow_nam
         print(msg)
         send_slack_alert(msg, state="INFO", flow_name=flow_name)
 
-        obesity_level_pipeline(model_alias=model_alias+"_retrain")
+        obesity_level_pipeline(model_alias=model_alias + "_retrain")
 
         msg = "Retraining completed."
         print(msg)
@@ -240,7 +249,9 @@ def monitoring_flow(model_alias):
     train_df, test_df = split_data(df, target="obesity_level")
     ds_train, ds_test = prepare_datasets(model, pipe, le, train_df, test_df)
     drift_score = run_monitoring(ds_train, ds_test)
-    check_drift_and_maybe_retrain(drift_score, model_alias=model_alias, flow_name=flow_name)
+    check_drift_and_maybe_retrain(
+        drift_score, model_alias=model_alias, flow_name=flow_name
+    )
 
 
 if __name__ == "__main__":

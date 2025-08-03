@@ -42,7 +42,7 @@ list-models:
 	python scripts/list_registered_models.py
 
 run-inference:
-	python pipelines/batch_inference.py  data/test.parquet
+	python pipelines/batch_inference.py $(ALIAS) data/ObesityDataSet_raw_and_data_sinthetic.csv
 
 terraform-deploy:
 	terraform -chdir=infra init

@@ -10,23 +10,27 @@ from catboost import CatBoostClassifier
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import config as cfg
 
+
 @task
 def load_data(filename):
-    test = pd.read_parquet(filename)
-    test = test.rename(columns={"family_history_with_overweight": "overweight_familiar",
-                       "FAVC":"eat_HC_food",
-                       "FCVC":"eat_vegetables",
-                       "NCP":"main_meals",
-                       "CAEC":"snack",
-                       "CH2O":"drink_water",
-                       "SCC":"monitoring_calories",
-                       "FAF":"physical_activity",
-                       "TUE":"use_of_technology",
-                       "CALC":"drink_alcohol",
-                       "MTRANS":"transportation_type",
-                       "NObeyesdad":"obesity_level"
-                       }).rename(columns=str.lower)
-    
+    test = pd.read_csv(filename)
+    test = test.rename(
+        columns={
+            "family_history_with_overweight": "overweight_familiar",
+            "FAVC": "eat_HC_food",
+            "FCVC": "eat_vegetables",
+            "NCP": "main_meals",
+            "CAEC": "snack",
+            "CH2O": "drink_water",
+            "SCC": "monitoring_calories",
+            "FAF": "physical_activity",
+            "TUE": "use_of_technology",
+            "CALC": "drink_alcohol",
+            "MTRANS": "transportation_type",
+            "NObeyesdad": "obesity_level",
+        }
+    ).rename(columns=str.lower)
+
     test = test.drop(["weight"], axis=1)
     return test
 
@@ -38,9 +42,7 @@ def split_X_y(test, target):
 @task
 def prepare_data(test):
     X_test, y_test = split_X_y(test, "obesity_level")
-    numeric_cols = X_test.select_dtypes(exclude=["object"]).columns
-    X_test[numeric_cols] = ss.transform(X_test[numeric_cols])
-    X_test = dv.transform(X_test.to_dict("records"))
+    X_test = pipe.transform(X_test)
     y_test = le.transform(y_test)
     return X_test, y_test
 
@@ -99,14 +101,14 @@ def obesity_level_inference_pipeline(project_id, bucket_name, filepath):
     y_pred = apply_model(X_test)
     df_result = make_result(df, y_pred)
     save_result(df_result, output_folder)
-    #upload2cloud(project_id, bucket_name, output_folder)
+    upload2cloud(project_id, bucket_name, output_folder)
     return
 
 
 if __name__ == "__main__":
     alias = sys.argv[1]
     filepath = sys.argv[2]
-    
+
     client = MlflowClient()
 
     model_version = client.get_model_version_by_alias(cfg.MODEL_NAME, alias)
@@ -114,22 +116,18 @@ if __name__ == "__main__":
     artifacts_path = f"./models/1/{RUN_ID}/artifacts/"
 
     model_path = f"{artifacts_path}/catboost_model/model.cb"
-    ss_path = f"{artifacts_path}/preprocessing/ss.pkl"
-    dv_path = f"{artifacts_path}/preprocessing/dv.pkl"
+    pipe_path = f"{artifacts_path}/preprocessing/pipe.pkl"
     le_path = f"{artifacts_path}/preprocessing/le.pkl"
 
     model = CatBoostClassifier()
     model.load_model(model_path)
 
-    with open(ss_path, "rb") as f:
-        ss = cloudpickle.load(f)
-
-    with open(dv_path, "rb") as f:
-        dv = cloudpickle.load(f)
+    with open(pipe_path, "rb") as f:
+        pipe = cloudpickle.load(f)
 
     with open(le_path, "rb") as f:
         le = cloudpickle.load(f)
-        
+
     project_id = "plucky-haven-463121-j1"
     bucket_name = "plucky-haven-463121-j1-predictions"
     obesity_level_inference_pipeline(project_id, bucket_name, filepath)

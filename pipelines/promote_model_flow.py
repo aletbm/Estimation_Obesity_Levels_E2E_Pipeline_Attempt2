@@ -8,7 +8,9 @@ import config as cfg
 client = MlflowClient()
 
 champion_version = client.get_model_version_by_alias(cfg.MODEL_NAME, "champion").version
-challenger_version = client.get_model_version_by_alias(cfg.MODEL_NAME, "challenger").version
+challenger_version = client.get_model_version_by_alias(
+    cfg.MODEL_NAME, "challenger"
+).version
 
 champion_tags = client.get_model_version(cfg.MODEL_NAME, champion_version).tags
 challenger_tags = client.get_model_version(cfg.MODEL_NAME, challenger_version).tags
@@ -22,6 +24,8 @@ if challenger_roc:
     client.delete_registered_model_alias(cfg.MODEL_NAME, "challenger")
     client.set_registered_model_alias(cfg.MODEL_NAME, "champion", challenger_version)
     client.set_model_version_tag(cfg.MODEL_NAME, champion_version, "archived", "true")
-    print(f"Version {challenger_version} is now 'champion'. Version {champion_version} archived.")
+    print(
+        f"Version {challenger_version} is now 'champion'. Version {champion_version} archived."
+    )
 else:
     print("Challenger did not outperform champion. No promotion executed.")
