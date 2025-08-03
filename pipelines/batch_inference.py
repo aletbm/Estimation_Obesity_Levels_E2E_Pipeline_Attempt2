@@ -10,6 +10,8 @@ from catboost import CatBoostClassifier
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import config as cfg
 
+cfg.init_conn_mlflow()
+
 
 @task
 def load_data(filename):

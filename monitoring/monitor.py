@@ -24,9 +24,10 @@ from pipelines.training_flow import (
     obesity_level_pipeline,
     load_data,
     clean_data,
-    prepare_data,
 )
 import config as cfg
+
+cfg.init_conn_mlflow()
 
 ARTIFACT_DIR = "monitoring/artifacts"
 os.makedirs(ARTIFACT_DIR, exist_ok=True)

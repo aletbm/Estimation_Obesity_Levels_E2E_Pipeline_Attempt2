@@ -20,8 +20,12 @@ INPUT_FOLDER = os.path.dirname(__file__)
 DATA_FOLDER = os.path.join(INPUT_FOLDER, "data/")
 MODEL_FOLDER = os.path.join(INPUT_FOLDER, "models/")
 
-mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
+
+def init_conn_mlflow():
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
+    return
+
 
 os.environ["PYTHONHASHSEED"] = str(SEED_VALUE)
 random.seed(SEED_VALUE)

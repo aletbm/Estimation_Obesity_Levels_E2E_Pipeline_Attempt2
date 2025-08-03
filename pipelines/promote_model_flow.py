@@ -5,6 +5,8 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import config as cfg
 
+cfg.init_conn_mlflow()
+
 client = MlflowClient()
 
 champion_version = client.get_model_version_by_alias(cfg.MODEL_NAME, "champion").version
