@@ -268,7 +268,9 @@ API_URL = "https://obesity-level-api-761922006747.us-east1.run.app/predict"
 API_URL = "http://localhost:8080/predict"
 ```
 
-## Remember to uncomment the correct API_URL based on your testing setup and comment out the unused one. This ensures the request is sent to the proper location for prediction.
+> Remember to uncomment the correct API_URL based on your testing setup and comment out the unused one. This ensures the request is sent to the proper location for prediction.
+
+---
 
 ### 🧱 4. Docker build and deployment to GCP
 
@@ -395,6 +397,7 @@ This CI/CD pipeline helps maintain reproducible builds, enforces quality standar
 The **CatBoost model** was selected for production based on its superior ROC AUC and F1 performance.
 
 ---
+
 
 # 🛠️ Makefile Usage Summary (with ALIAS support)
 
