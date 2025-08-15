@@ -1,11 +1,14 @@
 from mlflow.tracking import MlflowClient
 from pprint import pprint
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import config as cfg
+
 
 # --- Configuration ---
-MLFLOW_TRACKING_URI = "http://localhost:5000"
-MODEL_NAME = "MyCatBoostClassifier"
-ARTIFACT_DIR = "monitoring/artifacts"
-client = MlflowClient(tracking_uri=MLFLOW_TRACKING_URI)
+client = MlflowClient(tracking_uri=cfg.MLFLOW_TRACKING_URI)
 
 
 def list_all_models():

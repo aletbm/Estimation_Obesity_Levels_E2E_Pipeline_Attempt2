@@ -20,7 +20,7 @@ challenger_tags = client.get_model_version(cfg.MODEL_NAME, challenger_version).t
 champion_roc = float(champion_tags.get("roc_auc", 0))
 challenger_roc = float(challenger_tags.get("roc_auc", 0))
 
-if challenger_roc:
+if challenger_roc > champion_roc:
     print(f"Promoting challenger (v{challenger_version}) to champion")
     client.delete_registered_model_alias(cfg.MODEL_NAME, "champion")
     client.delete_registered_model_alias(cfg.MODEL_NAME, "challenger")
